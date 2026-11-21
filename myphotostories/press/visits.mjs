@@ -41,8 +41,8 @@ async function initialise(){
     document.querySelectorAll('[data-visit-preferences]').forEach(button=>button.addEventListener('click',()=>{focusReturn=button;show(true);}));
     if(!policy.enabled||policy.excluded||protectedChoice())return;
     const choice=savedChoice();
-    if(!choice&&window.MyPhotoStories.sourcePath()!=='/privacy')show();
-    else if(choice?.allowed){const result=await send('view');if(result.needsConsent)show();}
+    // New or changed preferences stay untracked. Only the footer opens the panel.
+    if(choice?.allowed)await send('view');
   }catch{/* Statistics never interrupt the public page. */}
 }
 initialise();

@@ -2,6 +2,9 @@ import {backend,pagesOrigin,publicBase,adminBase,isAdmin,sourceURL,routeURL,asse
 
 const nativeFetch=window.fetch.bind(window);
 const authKey="myphotostories-owner-session",visitKey="myphotostories-visit-identifiers";
+let setupToken=isAdmin(sourceURL(location.href).pathname)?/^#setup=([a-f0-9]{64})$/.exec(location.hash)?.[1]:null;
+// The one-use setup credential stays in memory, outside requests and history.
+if(setupToken)history.replaceState(null,"",location.pathname+location.search);
 let current=sourceURL(location.href),media={},session=readSession();
 function readSession(){try{const v=JSON.parse(sessionStorage.getItem(authKey));return v&&v.expires*1000>Date.now()?v:null;}catch{return null;}}
 function visitState(){try{const v=JSON.parse(localStorage.getItem(visitKey));return v?.until>Date.now()?v.value:"";}catch{return "";}}
@@ -78,7 +81,8 @@ async function mount(payload) {
   const root=document.querySelector("#pages-root");root.replaceChildren(...[...doc.body.childNodes].map(n=>document.importNode(n,true)));
   for(const node of doc.head.querySelectorAll('link[rel="stylesheet"],style,meta[name="theme-color"]'))document.head.append(document.importNode(node,true));
   observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["href"]});
-  for(const script of scripts)await import(script);
+  const version=new URL(import.meta.url).searchParams.get("v");
+  for(const script of scripts){const url=new URL(script,location.href);if(version)url.searchParams.set("v",version);await import(url.href);}
   const preview=document.querySelector("#site-preview");
   if(preview){const r=await relay("/cntrladmin/site-preview");if(r.ok){const p=await r.json();preview.srcdoc=rewriteDocument(p.html,p.media).documentElement.outerHTML;}}
   if(location.hash){try{document.querySelector(location.hash)?.scrollIntoView();}catch{}}
@@ -86,25 +90,55 @@ async function mount(payload) {
 function notice(text) {
   const root=document.querySelector("#pages-root"),p=document.createElement("p");p.textContent=text;p.setAttribute("role","alert");root.append(p);
 }
+function authControls(container,connected=()=>location.reload(),setup=false) {
+  const form=document.createElement("form");form.method="post";form.className="owner-login-form";
+  const field=(text,name,type,autocomplete)=>{
+    const label=document.createElement("label"),input=document.createElement("input");
+    label.textContent=text;input.name=name;input.type=type;input.autocomplete=autocomplete;input.required=true;
+    label.append(input);form.append(label);return input;
+  };
+  const username=field("Username","username","text","username");username.maxLength=80;username.autocapitalize="none";username.spellcheck=false;
+  const password=field("Password","password","password",setup?"new-password":"current-password");password.maxLength=256;
+  if(setup){username.value="sina";username.minLength=3;password.minLength=12;}
+  const confirm=setup?field("Confirm password","confirm","password","new-password"):null;
+  const submit=document.createElement("button");submit.type="submit";submit.textContent=setup?"Create my password":"Sign in";
+  const status=document.createElement("p");status.setAttribute("role","status");status.setAttribute("aria-live","polite");
+  form.append(submit,status);container.append(form);
+  form.onsubmit=async event=>{
+    event.preventDefault();
+    if(confirm&&password.value!==confirm.value){status.textContent="The passwords do not match.";confirm.focus();return;}
+    submit.disabled=true;status.textContent=setup?"Creating your password…":"Signing in…";
+    try {
+      const response=await nativeFetch(backend+"/github/password-"+(setup?"setup":"login"),{
+        method:"POST",headers:{"Content-Type":"application/json"},credentials:"omit",redirect:"error",cache:"no-store",
+        body:JSON.stringify({username:username.value,password:password.value,...(setup?{setupToken}:{})})
+      });
+      const result=await response.json();if(!response.ok)throw new Error(result.error||"Could not sign in. Please try again.");
+      saveSession(result);password.value="";if(confirm)confirm.value="";setupToken=null;connected();
+    }catch(error){status.textContent=error.message;}finally{submit.disabled=false;}
+  };
+  if(!setup) {
+    const alternative=document.createElement("p");alternative.className="owner-alternative";alternative.textContent="Or use your existing owner account";
+    const button=document.createElement("button");button.type="button";button.className="owner-chatgpt";button.textContent="Sign in with ChatGPT";
+    button.onclick=()=>connect(button,status,connected);container.append(alternative,button);
+  }
+}
+function saveSession(value){session=value;sessionStorage.setItem(authKey,JSON.stringify(session));}
 function loginScreen(message="Sign in to manage your journal.") {
   document.body.className="";
   const root=document.querySelector("#pages-root");root.replaceChildren();
   const main=document.createElement("main");main.className="pages-login";
   const heading=document.createElement("h1");heading.textContent="MyPhotoStories";
-  const info=document.createElement("p");info.textContent=message;
-  const button=document.createElement("button");button.type="button";button.textContent="Sign in with ChatGPT";
-  const status=document.createElement("p");status.setAttribute("role","status");
-  button.onclick=()=>connect(button,status);
-  main.append(heading,info,button,status);root.append(main);
+  const info=document.createElement("p");info.textContent=setupToken?"Set up your owner login. Choose a password with at least 12 characters.":message;
+  main.append(heading,info);authControls(main,()=>location.reload(),!!setupToken);
+  if(setupToken){const back=document.createElement("a");back.href=pagesOrigin+adminBase;back.textContent="Already set up? Sign in";main.append(back);}
+  root.append(main);
 }
 function reconnectNotice() {
   if(document.querySelector("#owner-reconnect"))return;
   const box=document.createElement("section");box.id="owner-reconnect";box.className="owner-reconnect";
   const text=document.createElement("p");text.textContent="Your owner session expired. Reconnect to continue saving your current work.";
-  const button=document.createElement("button");button.type="button";button.textContent="Reconnect";
-  const status=document.createElement("p");status.setAttribute("role","status");
-  button.onclick=()=>connect(button,status,()=>{box.remove();notice("Connected. You can save your current work again.");});
-  box.append(text,button,status);document.body.append(box);
+  box.append(text);authControls(box,()=>{box.remove();notice("Connected. You can save your current work again.");});document.body.append(box);
 }
 async function connect(button,status,connected=()=>location.reload()) {
   const popup=window.open("about:blank","myphotostories-owner","popup,width=650,height=740");
@@ -120,7 +154,7 @@ async function connect(button,status,connected=()=>location.reload()) {
       const response=await nativeFetch(backend+"/github/exchange",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({verifier}),credentials:"omit",redirect:"error"});
       if(!response.ok)throw new Error("Could not connect your owner session. Please try again.");
       if(response.status===200) {
-        session=await response.json();sessionStorage.setItem(authKey,JSON.stringify(session));
+        saveSession(await response.json());
         try{popup.close();}catch{}
         connected();return;
       }
@@ -169,6 +203,7 @@ document.addEventListener("submit",async event=>{
 });
 
 async function start() {
+  if(setupToken){loginScreen();return;}
   if(isAdmin(current.pathname)&&!session){loginScreen();return;}
   const response=await relay(current.pathname+current.search);
   if(response.status===401&&isAdmin(current.pathname)){sessionStorage.removeItem(authKey);session=null;loginScreen("Your session expired. Sign in again to continue.");return;}
