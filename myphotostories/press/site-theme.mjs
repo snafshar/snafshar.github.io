@@ -56,7 +56,7 @@ export function themeCSS(site){
     .public-body .magazine-spread:not(.text-only){grid-template-columns:${photoSide===1?"minmax(0,1.65fr) minmax(0,1fr)":"minmax(0,1fr) minmax(0,1.65fr)"}}
     .public-body .magazine-spread .magazine-photograph{grid-column:${photoSide};grid-row:1}
     .public-body .magazine-spread .magazine-text{grid-column:${photoSide===1?2:1};grid-row:1}
-    @media(max-width:760px){.public-body .magazine-spread:not(.text-only){grid-template-columns:1fr}.public-body .magazine-spread .magazine-photograph,.public-body .magazine-spread .magazine-text{grid-column:auto;grid-row:auto}}
+    @media(max-width:760px){.public-body .magazine-spread:not(.text-only){grid-template-columns:${photoSide===1?"minmax(0,1.2fr) minmax(0,1fr)":"minmax(0,1fr) minmax(0,1.2fr)"}}}
   `;
   return `
     .public-body{--paper:${site.background};--ink:${site.textColor};--muted:${site.mutedColor};--line:${site.dividerColor};--accent:${site.linkColor};--photo-filter:${site.photoStyle==="original"?"none":"grayscale(1)"}}
@@ -71,6 +71,7 @@ export function themeCSS(site){
     .public-body .magazine-text h2 a,.public-body .news-item a,.public-body .quiet-link,.public-body .channel,.public-body .story-pager a,.public-body .archive-link,.public-body .pager a{color:${site.linkColor}}
     .public-body .magazine-photo-link img,.public-body .magazine-photo-link video,.public-body .media-wrap img,.public-body .media-wrap video,.public-body .frame-box img,.public-body .frame-box video{filter:var(--photo-filter)}
     ${placement}
+    @media(max-width:760px){.public-body .magazine-story{font-size:clamp(14px,3.65vw,${site.excerptSize}px)}}
     @media print{.public-body{--paper:#fff;--ink:#000;background:#fff}.public-body .wrap{width:100%}}
   `;
 }
