@@ -35,12 +35,13 @@ function rewriteDocument(html, protectedMedia={}) {
 }
 function rewriteLink(node) {
   const href=node.getAttribute("href");if(!href)return;
-  if(node.tagName==="LINK") {node.setAttribute("href",assetURL(href,media));return;}
+  if(node.tagName==="LINK") {const mapped=assetURL(href,media);if(mapped!==href)node.setAttribute("href",mapped);return;}
   if(!["A","AREA"].includes(node.tagName))return;
   const u=new URL(href,backend);
   if(!["http:","https:"].includes(u.protocol) || (u.origin!==backend && u.origin!==pagesOrigin))return;
-  if(u.pathname==="/signout-with-chatgpt") {node.dataset.signOut="true";node.setAttribute("href",pagesOrigin+publicBase);return;}
-  node.setAttribute("href",routeURL(href,location.href));
+  if(u.pathname==="/signout-with-chatgpt") {node.dataset.signOut="true";if(href!==pagesOrigin+publicBase)node.setAttribute("href",pagesOrigin+publicBase);return;}
+  const mapped=routeURL(href,location.href);
+  if(mapped!==href)node.setAttribute("href",mapped);
   if(node.getAttribute("target")==="_top")node.removeAttribute("target");
 }
 window.MyPhotoStories={routeURL:value=>routeURL(value,location.href),sourceURL:()=>current.href,sourcePath:()=>current.pathname};
