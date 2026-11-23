@@ -81,3 +81,14 @@
 .clear-visits button { justify-self:start; }
 @media(max-width:800px) { .stats-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); } .stats-grid { grid-template-columns:1fr; } }
 @media(max-width:480px) { .stats-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } .stats-metrics strong { font-size:40px; } }
+
+/* Saved publication actions never sit inside the edit link. */
+.desk-nav{flex-wrap:wrap;gap:12px 25px}
+.entry-row{grid-template-columns:minmax(0,1fr) minmax(115px,.3fr) 60px minmax(200px,auto)}
+.entry-title{min-width:0;overflow-wrap:anywhere}.entry-title:hover strong{text-decoration:underline;text-underline-offset:3px}
+.entry-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end}
+.entry-controls .outline-btn{font-size:14px;min-height:40px;padding:7px 12px}
+.danger-btn{color:#8b3029;border-color:#8b3029}.danger-btn:hover{background:#f3e5df}
+.editor-actions{flex-wrap:wrap}.trash-row{grid-template-columns:minmax(0,1fr) auto}
+@media(max-width:1000px){.entry-row{grid-template-columns:minmax(0,1fr) 120px 50px}.entry-row .entry-controls{grid-column:1/-1;justify-content:flex-start}.entry-row.table-head span:last-child{display:none}}
+@media(max-width:550px){.entry-row{grid-template-columns:minmax(0,1fr) 95px 33px}.entry-controls .outline-btn{min-height:44px}.trash-row{grid-template-columns:minmax(0,1fr)}.trash-row .entry-controls{justify-content:flex-start}.editor-top .editor-actions{width:100%}}

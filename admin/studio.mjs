@@ -109,6 +109,17 @@ if(state.view==="about"){
   };
   window.addEventListener("beforeunload",event=>{if(dirty||saving){event.preventDefault();event.returnValue="";}});
 }
+if(state.view==="stories"||state.view==="trash"){
+  document.addEventListener("click",async event=>{
+    const button=event.target.closest("button[data-entry-action]");if(!button||button.disabled)return;
+    const action=button.dataset.entryAction,title=button.dataset.entryTitle;
+    const prompt=action==="delete"?`Move “${title}” to Trash? It will be unpublished. You can restore the saved item as a draft.`:action==="unpublish"?`Unpublish “${title}” and keep its saved draft?`:null;
+    if(prompt&&!confirm(prompt))return;
+    const controls=$$("button[data-entry-action]");controls.forEach(node=>node.disabled=true);
+    try{await send("entry-action",{id:button.dataset.entryId,revision:Number(button.dataset.entryRevision),action});location.reload();}
+    catch(error){report(error);controls.forEach(node=>node.disabled=false);}
+  });
+}
 if(state.view==="editor")startEditor();
 if(state.view==="site-settings")import("/admin/settings.mjs").then(module=>module.startSiteSettings(state));
 if(state.view==="statistics")import("/admin/statistics.mjs").then(module=>module.initStatistics(state));
@@ -275,21 +286,28 @@ function startEditor(){
   async function persist(action){
     if(saving)return;
     doc.title=doc.title.trim();if(!doc.title){$("#title").focus();report(new Error("Give the story a headline first."));return;}
-    if(action==="unpublish"&&!confirm("Remove this story from the public journal and keep its draft?"))return;
+    if(action==="unpublish"&&!confirm(news?"Unpublish this news update and keep its draft?":"Unpublish this post and keep its draft?"))return;
     if(!doc.id){const slug=doc.title.normalize("NFKD").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,64)||"story";doc.id=slug+"-"+crypto.randomUUID().slice(0,8);}
-    const captured=epoch;saving=true;for(const n of [$("#save-draft"),$("#publish"),$("#unpublish")])n.disabled=true;
+    const captured=epoch;saving=true;for(const n of [$("#save-draft"),$("#publish"),$("#unpublish"),$("#delete-entry")])n.disabled=true;
     $("#save-state").textContent="Saving…";
     try{
       const result=await send("entry",{doc,revision,action});revision=result.revision;published=result.published;
       if(captured===epoch)dirty=false;
       $("#save-state").textContent=dirty?"Unsaved changes":action==="publish"?"Published":published&&result.pending?"Draft saved · live story unchanged":"Draft saved";
-      notice.classList.remove("error");notice.textContent=action==="publish"?(news?"News update published.":"Story published."):action==="unpublish"?"Story unpublished.":"Draft saved.";
+      notice.classList.remove("error");notice.textContent=action==="publish"?(news?"News update published.":"Story published."):action==="unpublish"?(news?"News update unpublished.":"Story unpublished."):"Draft saved.";
       history.replaceState(null,"","/cntrladmin/edit/"+doc.id);const preview=$("#preview-link");preview.href="/cntrladmin/preview/"+doc.id;preview.hidden=false;
-      const live=$("#public-link");live.href=(news?"/news/":"/story/")+doc.id;live.hidden=!published;$("#unpublish").hidden=!published;
+      const live=$("#public-link");live.href=(news?"/news/":"/story/")+doc.id;live.hidden=!published;$("#unpublish").hidden=!published;$("#delete-entry").hidden=false;
     }catch(err){$("#save-state").textContent=dirty?"Unsaved changes":"Save failed";report(err);}
-    finally{saving=false;for(const n of [$("#save-draft"),$("#publish"),$("#unpublish")])n.disabled=false;}
+    finally{saving=false;for(const n of [$("#save-draft"),$("#publish"),$("#unpublish"),$("#delete-entry")])n.disabled=false;}
   }
   $("#save-draft").onclick=()=>persist("draft");$("#publish").onclick=()=>persist("publish");$("#unpublish").onclick=()=>persist("unpublish");
+  $("#delete-entry").onclick=async()=>{
+    if(saving||!doc.id)return;
+    if(!confirm(`Move “${doc.title}” to Trash? It will be unpublished. ${dirty?"Unsaved changes will not be kept. ":""}You can restore the saved version as a draft.`))return;
+    saving=true;const controls=[$("#save-draft"),$("#publish"),$("#unpublish"),$("#delete-entry")];controls.forEach(node=>node.disabled=true);
+    try{await send("entry-action",{id:doc.id,revision,action:"delete"});dirty=false;saving=false;const target=news?"/cntrladmin/news":"/cntrladmin";location.assign(window.MyPhotoStories?.routeURL(target)||target);}
+    catch(error){report(error);saving=false;controls.forEach(node=>node.disabled=false);}
+  };
   window.addEventListener("beforeunload",e=>{if(dirty||saving){e.preventDefault();e.returnValue="";}});
   mode(currentMode);update();
 }
