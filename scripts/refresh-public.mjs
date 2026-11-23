@@ -23,7 +23,7 @@ export async function prerender(directory,transport=fetch){
   if(!Array.isArray(catalog.routes)||catalog.routes.length>1000)throw new Error('Invalid public route catalog.');
   const paths=[],outputs=[];
   for(const route of catalog.routes){
-    if(!/^\/(?:archive|about|news|contact|privacy|(?:story|news)\/[a-z0-9-]{1,90})?$/.test(route))throw new Error('Refusing a non-public export route.');
+    if(!/^\/(?:archive|about|news|contact|privacy|notifications|(?:story|news)\/[a-z0-9-]{1,90})?$/.test(route))throw new Error('Refusing a non-public export route.');
     const value=await load(mediaOrigin+'/github/relay?path='+encodeURIComponent(route));
     if(typeof value.html!=='string'||!value.html.includes('<html'))throw new Error('Missing public article HTML.');
     let html=value.html.replace(/<script type="module" src="[^"]*"><\/script>/g,'');
@@ -35,7 +35,7 @@ export async function prerender(directory,transport=fetch){
     const file=path.join(directory,route==='/'?'index.html':route.slice(1)+'/index.html');
     outputs.push({file,html});paths.push({path:route,url:canonicalURL(route)});
   }
-  for(const owned of ['archive','about','news','contact','privacy','story'])await rm(path.join(directory,owned),{recursive:true,force:true});
+  for(const owned of ['archive','about','news','contact','privacy','notifications','story'])await rm(path.join(directory,owned),{recursive:true,force:true});
   for(const output of outputs){await mkdir(path.dirname(output.file),{recursive:true});await writeFile(output.file,output.html);}
   await writeFile(path.join(directory,'sitemap.xml'),'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+paths.map(p=>'<url><loc>'+escapeHTML(p.url)+'</loc></url>').join('')+'</urlset>\n');
   await writeFile(path.join(directory,'robots.txt'),'User-agent: *\nAllow: /\nDisallow: /cntrladmin/\nDisallow: /admin/\nSitemap: '+siteOrigin+'/sitemap.xml\n');

@@ -1,0 +1,49 @@
+/* Reader forms and private edition controls */
+.reader-account [hidden],.edition-cards [hidden]{display:none!important}
+.public-body .reader-account{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(32px,7vw,96px);max-width:1000px;padding-block:clamp(48px,8vw,110px)}
+.reader-intro h1{font:400 clamp(52px,6vw,84px)/1 var(--serif);margin:13px 0 22px}
+.reader-intro>p:not(.eyebrow){max-width:34ch;font:19px/1.65 Georgia,serif;margin-bottom:24px}
+.reader-panel{border-block:1px solid var(--line);padding:20px 0;align-self:start}
+.reader-panel h2,.email-desk h2,.edition-proof h2,.edition-confirm h2{font:400 34px/1.15 var(--serif);margin:0 0 10px}
+.reader-tabs{display:flex;gap:24px;margin-bottom:20px}
+.reader-tabs button{border:0;border-bottom:2px solid transparent;padding:6px 0;background:transparent;color:inherit;font:600 15px/1.45 var(--sans);cursor:pointer}
+.reader-tabs button[aria-pressed=true]{border-color:currentColor}
+.reader-form fieldset{border:0;padding:0;margin:0;min-width:0;display:grid;gap:16px}
+.reader-form legend{font:400 28px/1.15 var(--serif);margin:4px 0 20px}
+.reader-form label,.proof-controls label{display:grid;gap:5px;font:500 14px/1.45 var(--sans)}
+.reader-form input:not([type=checkbox]),.proof-controls select{min-width:0;width:100%;min-height:44px;background:transparent;color:inherit;border:1px solid var(--line,#ada99b);border-radius:2px;padding:8px 10px;font:16px var(--sans)}
+.reader-names{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.reader-form .reader-consent{display:flex;align-items:flex-start;gap:10px;line-height:1.55}
+.reader-consent input{width:18px;height:18px;flex:none;margin:2px 0}
+.reader-form button,.reader-actions button{justify-self:start}
+.reader-form fieldset:disabled button{opacity:.55;cursor:default}
+.reader-privacy{display:inline-block;margin-top:14px}
+.delivery-note{border-left:2px solid currentColor;padding:4px 12px;margin:0 0 20px;font-size:14px}
+#reader-status,#email-status,#edition-status{min-height:1.4em;margin-top:10px}
+.reader-actions,.proof-controls{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
+.reader-actions{margin-top:18px}
+.reader-panel #reader-link p{margin:12px 0 18px}
+.edition-cards{list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:28px 0;padding:0;gap:16px}
+.edition-card{display:flex;flex-direction:column;min-width:0;border:1px solid var(--line,#cfc8b8);padding:16px;border-top:5px solid var(--edition-swatch,#ae9d7f)}
+.edition-card-ledger{--edition-swatch:#865045}.edition-card-darkroom{--edition-swatch:#23292a}.edition-card-folio{--edition-swatch:#557052}
+.edition-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:5px;flex-wrap:wrap}
+.edition-card h2{margin:0;font:400 31px/1.15 var(--serif)}
+.edition-card p{font-size:14px;line-height:1.5;margin:12px 0 18px}
+.edition-card button{margin-top:auto;align-self:start}
+.edition-card button[aria-pressed=true]{box-shadow:inset 0 0 0 1px currentColor}
+.active-edition{font-size:11px;white-space:nowrap;color:#456146}
+.edition-proof{border-top:1px solid var(--line,#cfc8b8);padding-top:22px}
+.edition-proof>header{display:flex;align-items:end;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.proof-controls select{font-size:14px;min-height:40px}
+#edition-window{width:100%;position:relative;overflow:hidden;margin-top:12px;background:#dfded8;border:1px solid #c5c1b7;box-sizing:border-box}
+#edition-preview{position:absolute;top:0;left:0;transform-origin:top left;border:0;background:white}
+#edition-confirm{padding:26px;border:1px solid var(--line,#aca89b);background:#fbf9f1;color:#252820;max-width:min(90vw,430px)}
+#edition-confirm::backdrop{background:#25282066}
+.email-desk{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,6vw,76px)}
+.email-desk section{border-top:1px solid var(--line,#cfc8b8);padding-top:20px}
+.email-desk .reader-form{margin-top:24px}
+.delivery-stats{display:flex;flex-wrap:wrap;gap:24px;margin:24px 0}
+.delivery-stats dt{font-size:13px}.delivery-stats dd{font:38px var(--serif);margin:0}
+@media(max-width:960px){.edition-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.public-body .reader-account,.email-desk{grid-template-columns:1fr}.edition-cards{gap:8px}.edition-card{padding:10px}.edition-card h2{font-size:25px}.proof-controls{align-items:start}}
+

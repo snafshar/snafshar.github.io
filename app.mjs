@@ -12,8 +12,8 @@ function saveVisitState(value){try{if(value===".")localStorage.removeItem(visitK
 function relayURL(path){const u=new URL("/github/relay",backend);u.searchParams.set("path",path);return u;}
 async function relay(path, options={}) {
   const headers=new Headers(options.headers);
-  if(session)headers.set("Authorization","Bearer "+session.token);
-  const state=visitState();if(state)headers.set("X-Journal-Visitor",state);
+  if(session&&!path.startsWith("/notifications"))headers.set("Authorization","Bearer "+session.token);
+  const state=visitState();if(state&&!path.startsWith("/notifications"))headers.set("X-Journal-Visitor",state);
   const response=await nativeFetch(relayURL(path),{...options,headers,credentials:"omit",redirect:"error",cache:"no-store"});
   const visits=response.headers.get("X-Journal-Visitor");if(visits!==null)saveVisitState(visits);
   return response;
@@ -51,11 +51,11 @@ window.MyPhotoStories={routeURL:value=>routeURL(value,location.href),sourceURL:(
 window.fetch=async function(input,options={}) {
   const value=typeof input==="string"?input:input instanceof URL?input.href:input.url;
   const url=new URL(value,location.href);
-  const internal=(url.origin===location.origin||url.origin===backend) && (url.pathname.startsWith("/cntrladmin/api/")||["/visit-event","/visit-policy"].includes(url.pathname));
+  const internal=(url.origin===location.origin||url.origin===backend) && (url.pathname.startsWith("/cntrladmin/api/")||url.pathname.startsWith("/notifications/api/")||["/visit-event","/visit-policy"].includes(url.pathname));
   if(!internal)return nativeFetch(input,options);
   const response=await relay(url.pathname+url.search,options);
   if(response.status===401 && url.pathname.startsWith("/cntrladmin/api/")) reconnectNotice();
-  if(url.pathname==="/cntrladmin/api/site-preview"&&response.ok) {
+  if(["/cntrladmin/api/site-preview","/cntrladmin/api/theme-preview"].includes(url.pathname)&&response.ok) {
     const data=await response.json();data.html=rewriteDocument(data.html,media).documentElement.outerHTML;
     return new Response(JSON.stringify(data),{status:response.status,headers:{"Content-Type":"application/json"}});
   }

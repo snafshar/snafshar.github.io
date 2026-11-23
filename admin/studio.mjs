@@ -120,6 +120,8 @@ if(state.view==="stories"||state.view==="trash"){
     catch(error){report(error);controls.forEach(node=>node.disabled=false);}
   });
 }
+if(state.view==="themes")import("/press/edition-desk.mjs").then(module=>module.editionStudio(state,send));
+if(state.view==="email-delivery")import("/press/edition-desk.mjs").then(module=>module.emailDelivery(send));
 if(state.view==="editor")startEditor();
 if(state.view==="site-settings")import("/admin/settings.mjs").then(module=>module.startSiteSettings(state));
 if(state.view==="statistics")import("/admin/statistics.mjs").then(module=>module.initStatistics(state));

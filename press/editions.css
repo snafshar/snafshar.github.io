@@ -1,0 +1,65 @@
+/* Optional editions. The original journal never loads this stylesheet. */
+@media screen {
+  body.public-body:is(.edition-ledger,.edition-darkroom,.edition-folio) {color:var(--edition-ink);background:var(--edition-paper);--paper:var(--edition-paper);--line:var(--edition-line);--ink:var(--edition-ink);--muted:var(--edition-muted);--accent:var(--edition-accent)}
+  body.public-body:is(.edition-ledger,.edition-darkroom,.edition-folio) :is(.brand,.site-name,.magazine-text h2 a,.news-item a,.quiet-link,.channel,.archive-link,.story-pager a,.pager a){color:var(--edition-ink)}
+  body.public-body:is(.edition-ledger,.edition-darkroom,.edition-folio) .magazine-story{color:var(--edition-ink)}
+  body.public-body:is(.edition-ledger,.edition-darkroom,.edition-folio) .magazine-page>:not(.magazine-spread){grid-column:1/-1}
+  body.public-body:is(.edition-ledger,.edition-darkroom,.edition-folio) .magazine-photograph figcaption{color:var(--edition-muted);font-size:12px;line-height:1.5}
+  body.public-body:is(.edition-ledger,.edition-darkroom,.edition-folio) .magazine-location{font:600 10px/1.5 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--edition-accent)}
+  body.public-body:is(.edition-ledger,.edition-darkroom,.edition-folio) .magazine-text{align-self:start;max-width:none;min-width:0}
+  body.public-body:is(.edition-ledger,.edition-darkroom,.edition-folio) .magazine-spread{min-width:0}
+  /* Sunday Ledger */
+  .edition-ledger {--edition-paper:#f8f6ef;--edition-ink:#22281f;--edition-muted:#596057;--edition-line:#b9b7a7;--edition-accent:#834032}
+  body.public-body.edition-ledger .magazine-page{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:5%}
+  body.public-body.edition-ledger .magazine-heading:not(.archive-title){justify-content:center;text-align:center;border-bottom:4px double var(--edition-ink);padding:38px 0 30px;margin-bottom:32px}
+  body.public-body.edition-ledger .site-name{font:400 clamp(66px,8vw,116px)/.98 var(--serif);letter-spacing:-.045em}
+  body.public-body.edition-ledger .magazine-heading p{font:italic 16px/1.4 Georgia,serif}
+  body.public-body.edition-ledger .magazine-spread{display:flex;flex-direction:column;gap:18px;border-bottom:1px solid var(--edition-line);padding:0 0 30px;margin:0 0 32px}
+  body.public-body.edition-ledger .magazine-spread>*{width:100%}
+  body.public-body.edition-ledger .magazine-photo-link :is(img,video){width:100%;aspect-ratio:1.8;object-fit:cover}
+  body.public-body.edition-ledger .magazine-text h2{font:400 clamp(34px,3.8vw,56px)/1.02 var(--serif);letter-spacing:-.025em;margin:6px 0}
+  body.public-body.edition-ledger .magazine-story{font:17px/1.62 Georgia,serif;margin-top:12px}
+  body.public-body.edition-ledger .magazine-spread:first-of-type{grid-column:1/-1;display:grid;grid-template-columns:1.55fr 1fr;align-items:center;gap:5%;border-bottom:2px solid var(--edition-ink)}
+  body.public-body.edition-ledger .magazine-spread:first-of-type .magazine-text{grid-column:2;grid-row:1;align-self:center}
+  body.public-body.edition-ledger .magazine-spread:first-of-type .magazine-photograph{grid-column:1;grid-row:1}
+  body.public-body.edition-ledger .magazine-spread.text-only:first-of-type .magazine-text{grid-column:1/-1;max-width:760px}
+  body.public-body.edition-ledger .magazine-spread:first-of-type h2{font-size:clamp(40px,5.5vw,80px)}
+  body.public-body.edition-ledger .article-head{border-top:4px double var(--edition-ink);border-bottom:1px solid var(--edition-line);padding:24px 0;text-align:center}
+  body.public-body.edition-ledger .article-head :is(.entry-meta,.byline){justify-content:center}
+  /* Darkroom */
+  .edition-darkroom {--edition-paper:#171919;--edition-ink:#f2f1ec;--edition-muted:#c0c3bd;--edition-line:#494e4b;--edition-accent:#e5c794}
+  body.public-body.edition-darkroom .magazine-page{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:24px}
+  body.public-body.edition-darkroom .magazine-heading{padding:50px 0 38px}
+  body.public-body.edition-darkroom :is(.brand,.site-name){font-family:var(--sans);font-weight:550;letter-spacing:-.065em}
+  body.public-body.edition-darkroom .site-name{font-size:clamp(54px,7vw,98px)}
+  body.public-body.edition-darkroom .magazine-spread{display:flex;flex-direction:column;gap:18px;padding:0 0 20px;margin:0 0 22px;border-bottom:1px solid var(--edition-line)}
+  body.public-body.edition-darkroom .magazine-photograph{width:100%}
+  body.public-body.edition-darkroom .magazine-photo-link :is(img,video){width:100%;aspect-ratio:4/3;object-fit:cover;filter:none}
+  body.public-body.edition-darkroom .magazine-text h2{font:500 clamp(22px,2.35vw,34px)/1.15 var(--sans);letter-spacing:-.045em;margin:8px 0}
+  body.public-body.edition-darkroom .magazine-story{font:14px/1.65 var(--sans);color:var(--edition-muted);margin-top:10px}
+  body.public-body.edition-darkroom :is(.article-head h1,.news-item h2){font-family:var(--sans);letter-spacing:-.045em}
+  body.public-body.edition-darkroom .article-head{border-left:3px solid var(--edition-accent);padding-left:25px}
+  body.public-body.edition-darkroom :is(.reading-flow,.article-deck,.about-copy){color:var(--edition-ink)}
+  body.public-body.edition-darkroom .press-sheet{--paper:#f7f4eb;--ink:#20211f;--muted:#515650;color:var(--ink);background:var(--paper)}
+  body.public-body.edition-darkroom .press-sheet .press-line{color:var(--ink)}
+  body.public-body.edition-darkroom :is(.action,.read-switch button[aria-pressed=true]){color:#171919;background:#f2f1ec}
+  body.public-body.edition-darkroom :is(input,select,textarea,.outline-btn,.read-switch button){color:var(--edition-ink);background:var(--edition-paper);border-color:var(--edition-line)}
+  /* Field Folio */
+  .edition-folio {--edition-paper:#f4f3eb;--edition-ink:#243e36;--edition-muted:#53645b;--edition-line:#b7c5b9;--edition-accent:#516b41}
+  body.public-body.edition-folio .magazine-page{counter-reset:folio;max-width:960px}
+  body.public-body.edition-folio .magazine-heading{border-bottom:1px solid var(--edition-ink);margin-bottom:6px;padding-block:56px 36px}
+  body.public-body.edition-folio .site-name{font:italic 400 clamp(66px,8vw,106px)/1 var(--serif);letter-spacing:-.038em}
+  body.public-body.edition-folio .magazine-heading p{font-size:14px}
+  body.public-body.edition-folio .magazine-spread{counter-increment:folio;display:grid;grid-template-columns:4ch minmax(0,1fr) minmax(120px,22%);column-gap:4%;align-items:center;border-bottom:1px solid var(--edition-line);padding:27px 0;margin:0}
+  body.public-body.edition-folio .magazine-spread:before{content:counter(folio,decimal-leading-zero);grid-column:1;grid-row:1;align-self:start;padding-top:6px;font:13px/1.5 ui-monospace,monospace;color:var(--edition-accent)}
+  body.public-body.edition-folio .magazine-spread .magazine-text{grid-column:2;grid-row:1;align-self:center}
+  body.public-body.edition-folio .magazine-spread .magazine-photograph{grid-column:3;grid-row:1}
+  body.public-body.edition-folio .magazine-spread.text-only .magazine-text{grid-column:2/-1}
+  body.public-body.edition-folio .magazine-photo-link :is(img,video){width:100%;aspect-ratio:1.25;object-fit:cover}
+  body.public-body.edition-folio .magazine-text h2{font:400 clamp(32px,4.2vw,56px)/1.05 var(--serif);letter-spacing:-.035em;margin:4px 0 10px}
+  body.public-body.edition-folio .magazine-story{font:16px/1.6 Georgia,serif;margin:0}
+  body.public-body.edition-folio .article-head{padding:28px 0;border-bottom:1px solid var(--edition-line)}
+  body.public-body.edition-folio .article-head h1{font-style:italic}
+  body.public-body:is(.edition-ledger,.edition-darkroom,.edition-folio) .article-page .press-line{color:inherit}
+}
+
