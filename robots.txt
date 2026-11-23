@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /cntrladmin/
+Disallow: /admin/
+Sitemap: https://snafshar.github.io/sitemap.xml

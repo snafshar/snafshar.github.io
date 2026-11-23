@@ -1,0 +1,38 @@
+name: Refresh published articles and SEO
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/refresh-public.yml'
+      - 'scripts/refresh-public.mjs'
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: public-article-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Render published public content
+        run: node scripts/refresh-public.mjs .
+      - name: Save changed public HTML and request a Pages build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git add index.html archive about news contact privacy story sitemap.xml robots.txt .nojekyll
+          if git diff --cached --quiet; then
+            if [ "$GITHUB_EVENT_NAME" = push ]; then
+              gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds"
+            fi
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Refresh published articles and search metadata'
+          git push
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds"

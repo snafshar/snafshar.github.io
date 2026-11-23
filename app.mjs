@@ -79,7 +79,8 @@ async function mount(payload) {
   doc.querySelectorAll('script[src]').forEach(n=>n.remove());
   document.title=doc.title;document.body.className=doc.body.className;
   const root=document.querySelector("#pages-root");root.replaceChildren(...[...doc.body.childNodes].map(n=>document.importNode(n,true)));
-  for(const node of doc.head.querySelectorAll('link[rel="stylesheet"],style,meta[name="theme-color"]'))document.head.append(document.importNode(node,true));
+  document.head.querySelectorAll('[data-page-meta],link[rel="canonical"],meta[property^="og:"],meta[property^="article:"],meta[name="description"],meta[name="twitter:card"],script[type="application/ld+json"]').forEach(node=>node.remove());
+  for(const node of doc.head.querySelectorAll('link[rel="stylesheet"],style,meta[name="theme-color"],link[rel="canonical"],meta[property^="og:"],meta[property^="article:"],meta[name="description"],meta[name="twitter:card"],script[type="application/ld+json"]')){const copy=document.importNode(node,true);copy.dataset.pageMeta="true";document.head.append(copy);}
   observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["href"]});
   const version=new URL(import.meta.url).searchParams.get("v");
   for(const script of scripts){const url=new URL(script,location.href);if(version)url.searchParams.set("v",version);await import(url.href);}
@@ -101,21 +102,44 @@ function authControls(container,connected=()=>location.reload(),setup=false) {
   const password=field("Password","password","password",setup?"new-password":"current-password");password.maxLength=256;
   if(setup){username.value="sina";username.minLength=3;password.minLength=12;}
   const confirm=setup?field("Confirm password","confirm","password","new-password"):null;
+  const captcha=document.createElement("fieldset");captcha.className="owner-captcha";
+  const legend=document.createElement("legend");legend.textContent="Security verification";
+  const image=document.createElement("img");image.alt="Verification image. Enter its six characters below, or use the audio option.";image.width=300;image.height=96;
+  const tools=document.createElement("div"),refresh=document.createElement("button"),listen=document.createElement("button");
+  refresh.type=listen.type="button";refresh.textContent="New challenge";listen.textContent="Listen instead";
+  tools.append(refresh,listen);captcha.append(legend,image,tools);form.append(captcha);
+  const answer=field("Verification characters","captchaAnswer","text","off");answer.maxLength=6;answer.required=true;answer.autocapitalize="characters";answer.spellcheck=false;
+  const audio=document.createElement("audio");audio.controls=true;audio.hidden=true;captcha.append(audio);
+  let challenge=null,audioURL=null;
   const submit=document.createElement("button");submit.type="submit";submit.textContent=setup?"Create my password":"Sign in";
   const status=document.createElement("p");status.setAttribute("role","status");status.setAttribute("aria-live","polite");
   form.append(submit,status);container.append(form);
+  async function loadCaptcha(){
+    challenge=null;submit.disabled=true;refresh.disabled=true;listen.disabled=true;answer.value="";audio.pause();audio.hidden=true;
+    if(audioURL){URL.revokeObjectURL(audioURL);audioURL=null;}
+    try {
+      const response=await nativeFetch(backend+"/github/captcha",{credentials:"omit",cache:"no-store",redirect:"error"});
+      const result=await response.json();if(!response.ok)throw new Error(result.error||"Could not load verification.");
+      challenge=result;image.src=result.image;
+      const bytes=Uint8Array.from(atob(result.audio.split(",")[1]),c=>c.charCodeAt(0));audioURL=URL.createObjectURL(new Blob([bytes],{type:"audio/wav"}));audio.src=audioURL;
+      submit.disabled=false;listen.disabled=false;
+    }catch(error){status.textContent=error.message;}finally{refresh.disabled=false;}
+  }
+  refresh.onclick=()=>loadCaptcha();listen.onclick=()=>{audio.hidden=false;audio.play().catch(()=>{status.textContent="Press Play to hear the verification characters.";});};
+  loadCaptcha();
   form.onsubmit=async event=>{
     event.preventDefault();
     if(confirm&&password.value!==confirm.value){status.textContent="The passwords do not match.";confirm.focus();return;}
+    if(!challenge||challenge.expires*1000<=Date.now()){status.textContent="The challenge expired. Please use the new image.";await loadCaptcha();return;}
     submit.disabled=true;status.textContent=setup?"Creating your password…":"Signing in…";
     try {
       const response=await nativeFetch(backend+"/github/password-"+(setup?"setup":"login"),{
         method:"POST",headers:{"Content-Type":"application/json"},credentials:"omit",redirect:"error",cache:"no-store",
-        body:JSON.stringify({username:username.value,password:password.value,...(setup?{setupToken}:{})})
+        body:JSON.stringify({username:username.value,password:password.value,captchaId:challenge.id,captchaAnswer:answer.value,...(setup?{setupToken}:{})})
       });
       const result=await response.json();if(!response.ok)throw new Error(result.error||"Could not sign in. Please try again.");
       saveSession(result);password.value="";if(confirm)confirm.value="";setupToken=null;connected();
-    }catch(error){status.textContent=error.message;}finally{submit.disabled=false;}
+    }catch(error){status.textContent=error.message;await loadCaptcha();}finally{submit.disabled=!challenge;}
   };
 }
 function saveSession(value){session=value;sessionStorage.setItem(authKey,JSON.stringify(session));}
@@ -175,6 +199,7 @@ document.addEventListener("submit",async event=>{
 });
 
 async function start() {
+  if(isAdmin(current.pathname)&&window.top!==window.self)throw new Error("Open the dashboard directly at https://snafshar.github.io/cntrladmin/.");
   if(setupToken){loginScreen();return;}
   if(isAdmin(current.pathname)&&!session){loginScreen();return;}
   const response=await relay(current.pathname+current.search);
