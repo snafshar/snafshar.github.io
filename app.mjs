@@ -117,11 +117,6 @@ function authControls(container,connected=()=>location.reload(),setup=false) {
       saveSession(result);password.value="";if(confirm)confirm.value="";setupToken=null;connected();
     }catch(error){status.textContent=error.message;}finally{submit.disabled=false;}
   };
-  if(!setup) {
-    const alternative=document.createElement("p");alternative.className="owner-alternative";alternative.textContent="Or use your existing owner account";
-    const button=document.createElement("button");button.type="button";button.className="owner-chatgpt";button.textContent="Sign in with ChatGPT";
-    button.onclick=()=>connect(button,status,connected);container.append(alternative,button);
-  }
 }
 function saveSession(value){session=value;sessionStorage.setItem(authKey,JSON.stringify(session));}
 function loginScreen(message="Sign in to manage your journal.") {
@@ -139,29 +134,6 @@ function reconnectNotice() {
   const box=document.createElement("section");box.id="owner-reconnect";box.className="owner-reconnect";
   const text=document.createElement("p");text.textContent="Your owner session expired. Reconnect to continue saving your current work.";
   box.append(text);authControls(box,()=>{box.remove();notice("Connected. You can save your current work again.");});document.body.append(box);
-}
-async function connect(button,status,connected=()=>location.reload()) {
-  const popup=window.open("about:blank","myphotostories-owner","popup,width=650,height=740");
-  if(!popup){status.textContent="Allow the sign-in window for this site, then try again.";return;}
-  const verifier=Array.from(crypto.getRandomValues(new Uint8Array(32)),n=>n.toString(16).padStart(2,"0")).join("");
-  const bytes=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(verifier));
-  const challenge=Array.from(new Uint8Array(bytes),n=>n.toString(16).padStart(2,"0")).join("");
-  popup.location.href=backend+"/github/login?challenge="+challenge;
-  button.disabled=true;status.textContent="Complete sign-in and choose Connect dashboard in the new window.";
-  const until=Date.now()+5*60000;
-  try {
-    while(Date.now()<until) {
-      const response=await nativeFetch(backend+"/github/exchange",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({verifier}),credentials:"omit",redirect:"error"});
-      if(!response.ok)throw new Error("Could not connect your owner session. Please try again.");
-      if(response.status===200) {
-        saveSession(await response.json());
-        try{popup.close();}catch{}
-        connected();return;
-      }
-      await new Promise(resolve=>setTimeout(resolve,2000));
-    }
-    status.textContent="The sign-in request expired. Please try again.";
-  }catch(error){status.textContent=error.message;}finally{button.disabled=false;}
 }
 document.addEventListener("click",async event=>{
   const link=event.target.closest("a[href]");if(!link)return;

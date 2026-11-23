@@ -1,6 +1,6 @@
 export const backend = "https://silvergrain-journal.afsharsn.chatgpt.site";
 export const pagesOrigin = "https://snafshar.github.io";
-export const publicBase = "/myphotostories/";
+export const publicBase = "/";
 export const adminBase = "/cntrladmin/";
 export function isAdmin(path) {return path === "/cntrladmin" || path.startsWith("/cntrladmin/");}
 export function sourceURL(href) {

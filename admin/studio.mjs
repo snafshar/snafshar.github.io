@@ -1,6 +1,6 @@
-import {createProof,el,runMarkup} from "/myphotostories/press/proof.mjs";
-import {layoutHistory} from "/myphotostories/press/layout-history.mjs";
-import {WIDTH,HEIGHT,clamp} from "/myphotostories/press/composition.mjs";
+import {createProof,el,runMarkup} from "/press/proof.mjs";
+import {layoutHistory} from "/press/layout-history.mjs";
+import {WIDTH,HEIGHT,clamp} from "/press/composition.mjs";
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const state=JSON.parse($("#studio-data").textContent);
@@ -110,8 +110,8 @@ if(state.view==="about"){
   window.addEventListener("beforeunload",event=>{if(dirty||saving){event.preventDefault();event.returnValue="";}});
 }
 if(state.view==="editor")startEditor();
-if(state.view==="site-settings")import("/myphotostories/admin/settings.mjs").then(module=>module.startSiteSettings(state));
-if(state.view==="statistics")import("/myphotostories/admin/statistics.mjs").then(module=>module.initStatistics(state));
+if(state.view==="site-settings")import("/admin/settings.mjs").then(module=>module.startSiteSettings(state));
+if(state.view==="statistics")import("/admin/statistics.mjs").then(module=>module.initStatistics(state));
 
 function readParagraphs(root){
   const paras=[];let runs=[],kind="p";

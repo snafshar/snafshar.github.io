@@ -1,11 +1,10 @@
-# Sina Afshar — Personal Website
+# MyPhotoStories
 
-Live website: https://snafshar.github.io
+Sina Afshar’s personal photography journal.
 
-Personal portfolio, projects, research, education and downloadable curriculum vitae.
+- Website: https://snafshar.github.io/
+- Owner dashboard: https://snafshar.github.io/cntrladmin/
 
-## Updating the website
+The dashboard uses an owner username and password. There is no public registration. The published interface is served directly by GitHub Pages; protected content, uploads and publishing use the existing journal backend.
 
-Edit `index.html` for content, `styles.css` for design, and `script.js` for navigation behavior. Images, locally hosted fonts, font licensing information, and the original CV PDF are in `assets/`.
-
-This is a static website with no build step or package dependencies. GitHub Pages publishes the root of the `main` branch. `.nojekyll` preserves static asset delivery. Commit updates to `main` to publish them.
+Source project: silvergrain-journal. Build the interface with scripts/build-github-pages.mjs and publish its output at the repository root.
