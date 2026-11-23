@@ -92,3 +92,5 @@
 .editor-actions{flex-wrap:wrap}.trash-row{grid-template-columns:minmax(0,1fr) auto}
 @media(max-width:1000px){.entry-row{grid-template-columns:minmax(0,1fr) 120px 50px}.entry-row .entry-controls{grid-column:1/-1;justify-content:flex-start}.entry-row.table-head span:last-child{display:none}}
 @media(max-width:550px){.entry-row{grid-template-columns:minmax(0,1fr) 95px 33px}.entry-controls .outline-btn{min-height:44px}.trash-row{grid-template-columns:minmax(0,1fr)}.trash-row .entry-controls{justify-content:flex-start}.editor-top .editor-actions{width:100%}}
+
+.profile-tabs{display:flex;gap:8px;position:sticky;top:0;background:var(--paper);z-index:2;padding-block:12px}.profile-tabs button{font:500 16px Inter,Arial,sans-serif;padding:10px 16px;min-height:44px;border:1px solid var(--line);background:transparent;cursor:pointer}.profile-tabs button[aria-pressed=true]{background:var(--ink);color:var(--paper)}

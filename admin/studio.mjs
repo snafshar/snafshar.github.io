@@ -113,10 +113,10 @@ if(state.view==="stories"||state.view==="trash"){
   document.addEventListener("click",async event=>{
     const button=event.target.closest("button[data-entry-action]");if(!button||button.disabled)return;
     const action=button.dataset.entryAction,title=button.dataset.entryTitle;
-    const prompt=action==="delete"?`Move “${title}” to Trash? It will be unpublished. You can restore the saved item as a draft.`:action==="unpublish"?`Unpublish “${title}” and keep its saved draft?`:null;
+    const prompt=action==="purge"?`Permanently delete “${title}”? Its saved text and layout cannot be restored. Gallery files will remain.`:action==="delete"?`Move “${title}” to Trash? It will be unpublished. You can restore the saved item as a draft.`:action==="unpublish"?`Unpublish “${title}” and keep its saved draft?`:null;
     if(prompt&&!confirm(prompt))return;
     const controls=$$("button[data-entry-action]");controls.forEach(node=>node.disabled=true);
-    try{await send("entry-action",{id:button.dataset.entryId,revision:Number(button.dataset.entryRevision),action});location.reload();}
+    try{await send("entry-action",{id:button.dataset.entryId,revision:Number(button.dataset.entryRevision),action,...(action==="purge"?{confirm:"DELETE FOREVER"}:{})});location.reload();}
     catch(error){report(error);controls.forEach(node=>node.disabled=false);}
   });
 }
