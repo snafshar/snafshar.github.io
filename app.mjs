@@ -79,7 +79,7 @@ async function mount(payload) {
   doc.querySelectorAll('script[src]').forEach(n=>n.remove());
   document.title=doc.title;document.body.className=doc.body.className;
   const root=document.querySelector("#pages-root");root.replaceChildren(...[...doc.body.childNodes].map(n=>document.importNode(n,true)));
-  document.head.querySelectorAll('[data-page-meta],meta[name="journal-mobile-canvas"],link[rel="canonical"],meta[property^="og:"],meta[property^="article:"],meta[name="description"],meta[name="twitter:card"],script[type="application/ld+json"]').forEach(node=>node.remove());
+  document.head.querySelectorAll('[data-page-meta],style#page-appearance,meta[name="journal-mobile-canvas"],link[rel="canonical"],meta[property^="og:"],meta[property^="article:"],meta[name="description"],meta[name="twitter:card"],script[type="application/ld+json"]').forEach(node=>node.remove());
   for(const node of doc.head.querySelectorAll('link[rel="stylesheet"],style,meta[name="theme-color"],meta[name="journal-mobile-canvas"],link[rel="canonical"],meta[property^="og:"],meta[property^="article:"],meta[name="description"],meta[name="twitter:card"],script[type="application/ld+json"]')){const copy=document.importNode(node,true);copy.dataset.pageMeta="true";document.head.append(copy);}
   observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["href"]});
   const version=new URL(import.meta.url).searchParams.get("v");

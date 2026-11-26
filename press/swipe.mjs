@@ -2,7 +2,7 @@ const scope = document.querySelector("main");
 const pager = scope?.querySelector("nav.story-pager, nav.pager");
 if (scope && pager) {
   let start = null;
-  const interactive = "button,input,select,textarea,video,audio,[contenteditable=true]";
+  const interactive = "button,input,select,textarea,video,audio,[data-home-gallery],[contenteditable=true]";
   scope.addEventListener("touchstart", event => {
     const point = event.touches[0];
     start = event.touches.length === 1 && !event.target.closest(interactive)

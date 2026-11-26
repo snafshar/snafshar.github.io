@@ -1,3 +1,4 @@
+import {editHomePhotos} from "/press/home-photo-editor.mjs";
 import {createProof,el,runMarkup} from "/press/proof.mjs";
 import {layoutHistory} from "/press/layout-history.mjs";
 import {WIDTH,HEIGHT,clamp} from "/press/composition.mjs";
@@ -22,12 +23,15 @@ function mediaDimensions(file){
     node.onerror=()=>finish(reject,new Error("Could not read "+file.name+". Try JPEG, PNG, WebP, MP4, or WebM."));node.src=url;
   });
 }
-function wireUploads(added){
-  const input=$("#files");if(!input)return;let busy=false;
+function wireUploads(added,options={}){
+  const input=options.input||$("#files");if(!input)return;let busy=false;
   async function ingest(files){
-    if(busy)return;busy=true;input.disabled=true;const status=$("#upload-status");status.classList.remove("error");let done=0;const errors=[];
+    if(busy)return;
+    const status=options.status||$("#upload-status");
+    if(options.available && files.length>options.available()){status.textContent="This selection would exceed 20 homepage photos.";input.value="";return;}
+    busy=true;input.disabled=true;status.classList.remove("error");let done=0;const errors=[];
     try{for(const file of files){
-      try{if(!["image/jpeg","image/png","image/webp","video/mp4","video/webm"].includes(file.type))throw new Error("Unsupported type: "+file.name);
+      try{if(options.available&&(!file.type.startsWith("image/")||!options.available()))throw new Error("Choose a photograph within the 20-photo limit.");if(!["image/jpeg","image/png","image/webp","video/mp4","video/webm"].includes(file.type))throw new Error("Unsupported type: "+file.name);
         const max=file.type.startsWith("video")?80:16;if(file.size>max*1024*1024)throw new Error(file.name+" exceeds "+max+" MB.");
         status.textContent="Uploading "+file.name+"…";const [width,height]=await mediaDimensions(file);
         const q=new URLSearchParams({name:file.name,width:String(width),height:String(height)});
@@ -35,10 +39,10 @@ function wireUploads(added){
         state.assets.unshift(a);added(a);done++;
       }catch(e){errors.push(e.message);}}
       status.textContent=(done?done+" "+(done===1?"item":"items")+" added. ":"")+errors.join(" ");status.classList.toggle("error",!!errors.length);
-    }finally{input.value="";busy=false;input.disabled=false;}
+    }finally{input.value="";busy=false;input.disabled=options.available?options.available()<=0:false;}
   }
   input.addEventListener("change",()=>ingest([...input.files]));
-  const zone=state.view==="gallery"?$("#main"):$(".asset-panel");
+  const zone=options.zone||(state.view==="gallery"?$("#main"):$(".asset-panel"));
   zone.addEventListener("dragover",e=>{if(e.dataTransfer.types.includes("Files")){e.preventDefault();zone.classList.add("file-hover");}});
   zone.addEventListener("dragleave",e=>{if(!zone.contains(e.relatedTarget))zone.classList.remove("file-hover");});
   zone.addEventListener("drop",e=>{if(e.dataTransfer.files.length){e.preventDefault();zone.classList.remove("file-hover");ingest([...e.dataTransfer.files]);}});
@@ -123,6 +127,7 @@ if(state.view==="stories"||state.view==="trash"){
 if(state.view==="themes")import("/press/edition-desk.mjs").then(module=>module.editionStudio(state,send));
 if(state.view==="email-delivery")import("/press/edition-desk.mjs").then(module=>module.emailDelivery(send));
 if(state.view==="editor")startEditor();
+if(state.view==="page-settings")import("/press/page-settings-desk.mjs").then(module=>module.startPageSettings(state,send));
 if(state.view==="site-settings")import("/admin/settings.mjs").then(module=>module.startSiteSettings(state));
 if(state.view==="statistics")import("/admin/statistics.mjs").then(module=>module.initStatistics(state));
 
@@ -162,7 +167,8 @@ function startEditor(){
   let revision=rec?.revision||0,published=rec?.published||false,selected="",armed="",dirty=false,epoch=0,saving=false,currentMode="write",savedRange=null;
   const body=$("#body-editor"),props=$("#properties"),root=$("#studio-proof"),hint=$("#layout-hint"),notice=$("#status");
   for(const p of doc.body){const n=el(p.kind==="quote"?"blockquote":p.kind);runMarkup(n,p.runs);if(!p.runs.length)n.append(el("br"));body.append(n);}
-  function changed(){dirty=true;epoch++;$("#save-state").textContent="Unsaved changes";notice.textContent="";notice.classList.remove("error");}
+  let homePhotos;
+  function changed(){homePhotos?.refresh();dirty=true;epoch++;$("#save-state").textContent="Unsaved changes";notice.textContent="";notice.classList.remove("error");}
   const update=()=>proof.update(doc,state.assets,selected);
   function setSelection(id){selected=id;props.hidden=!id;if(id){const f=doc.frames.find(p=>p.id===id);if(f){for(const n of $$("[data-frame-field]"))n.value=f[n.dataset.frameField];syncNumbers(f);}}}
   function syncNumbers(f){for(const n of $$("[data-geometry]")){if(n!==document.activeElement)n.value=f[n.dataset.geometry]+(n.dataset.geometry==="page"?1:0);}}
@@ -258,7 +264,12 @@ function startEditor(){
   function restore(){body.focus();if(savedRange&&body.contains(savedRange.commonAncestorContainer)){const s=getSelection();s.removeAllRanges();s.addRange(savedRange);}}
   for(const b of $$("[data-command]")){b.onmousedown=e=>e.preventDefault();b.onclick=()=>{restore();document.execCommand(b.dataset.command,false);bodyChange();};}
   $("#block-style").onchange=e=>{restore();document.execCommand("formatBlock",false,e.target.value);bodyChange();};
-  function galleryView(){renderGallery(arm,proof,place);coverOptions();}
+  const homePanel=$("#home-photos");
+  if(homePanel){
+    homePhotos=editHomePhotos(doc,state.assets,changed);
+    wireUploads(a=>{homePhotos.add(a.id);galleryView();},{input:homePanel.querySelector("[data-upload-home]"),zone:homePanel,status:homePanel.querySelector("[role=status]"),available:homePhotos.available});
+  }
+  function galleryView(){renderGallery(arm,proof,place);coverOptions();homePhotos?.refresh();}
   galleryView();wireUploads(galleryView);
   for(const n of $$("[data-frame-field]")){
     n.oninput=()=>{if(selected)move(selected,{[n.dataset.frameField]:n.value},selected+"-"+n.dataset.frameField);};

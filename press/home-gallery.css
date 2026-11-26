@@ -1,0 +1,17 @@
+/* Only the front page loads this stylesheet. Every photograph occupies the existing 3:2 cover frame. */
+.public-body .home-page .home-slide .magazine-photo-link{display:block;width:100%;aspect-ratio:3/2;overflow:hidden}
+.public-body .home-page .home-slide .cover-visual{position:relative;width:100%;height:100%}
+.public-body .home-page .home-slide .magazine-photo-link img{display:block;width:100%;height:100%;aspect-ratio:3/2;object-fit:cover;object-position:center}
+.home-gallery,.home-image{position:relative;min-width:0;width:100%;margin:0}
+.home-track{display:flex;align-items:start;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.home-track::-webkit-scrollbar{display:none}
+.home-slide{flex:0 0 100%;min-width:0;margin:0;scroll-snap-align:start}
+.home-track.dragging{scroll-snap-type:none;user-select:none;cursor:grabbing}
+.home-track.dragging a{cursor:grabbing}
+.home-controls{position:absolute;top:8px;right:8px;z-index:1;display:flex;align-items:center;gap:2px;border-radius:3px;background:#181916e8;color:white;font:500 13px/1.2 var(--sans);font-variant-numeric:tabular-nums}
+.home-controls[hidden]{display:none}
+.home-controls button{border:0;border-radius:2px;background:transparent;color:inherit;cursor:pointer;font:inherit;padding:8px;min-height:38px}
+.home-controls button:disabled{opacity:.5;cursor:default}
+.home-controls output{padding:0 3px;color:white;white-space:nowrap}
+.home-track:focus-visible,.home-controls button:focus-visible{outline:2px solid #c57535;outline-offset:2px}
+@media print{.home-controls{display:none}.home-track{overflow:hidden}.home-track .home-slide:not(:first-child){display:none}}
